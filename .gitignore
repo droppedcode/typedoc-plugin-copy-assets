@@ -126,5 +126,4 @@ dist
 # Generated docs
 docs/
 
-package-lock.json
 temp

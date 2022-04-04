@@ -1,6 +1,6 @@
 {
   "name": "@droppedcode/typedoc-plugin-copy-assets",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "droppedcode",
   "license": "MIT",
   "scripts": {
@@ -9,9 +9,6 @@
     "lint": "eslint ./src/** --max-warnings 0",
     "lint:fix": "eslint ./src/** --fix",
     "pack": "npm run build && npm pack"
-  },
-  "peerDependencies": {
-    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.178",
