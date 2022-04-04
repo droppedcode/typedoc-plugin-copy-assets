@@ -1,0 +1,146 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:jsdoc/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": ["./src/*/*/tsconfig.json", "./tools/*/tsconfig.json"],
+    "tsconfigRootDir": "./",
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "ignorePatterns": ["*.*", "!*.ts", "node_modules", "build", "dist", "public"],
+  "plugins": [
+    "disable-autofix",
+    "prettier",
+    "@typescript-eslint",
+    "import",
+    "jsdoc",
+    "unused-imports"
+  ],
+  "rules": {
+    "prettier/prettier": "warn",
+    "indent": "off",
+    "linebreak-style": "off",
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "semi": ["error", "always"],
+    "import/order": [
+      "warn",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          ["parent", "sibling"],
+          "index",
+          "object",
+          "type"
+        ],
+        "newlines-between": "always",
+        "pathGroups": [
+          { "pattern": "@droppedcode/**", "group": "parent", "position": "before" }
+        ],
+        "alphabetize": { "order": "asc", "caseInsensitive": true }
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": [
+      "error",
+      { "ignoreRestArgs": false }
+    ],
+    "@typescript-eslint/no-inferrable-types": ["off"],
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "explicit",
+        "overrides": {
+          "constructors": "no-public"
+        }
+      }
+    ],
+    "jsdoc/require-jsdoc": [
+      "error",
+      {
+        "require": {
+          "FunctionExpression": false,
+          "FunctionDeclaration": true,
+          "ClassDeclaration": true,
+          "ClassExpression": true,
+          "MethodDefinition": true
+        },
+        "checkConstructors": false,
+        "contexts": [
+          "PropertyDefinition:not([accessibility=private])",
+          "TSInterfaceDeclaration",
+          "TSMethodSignature",
+          "TSPropertySignature",
+          "TSEnumDeclaration"
+        ]
+      }
+    ],
+    "jsdoc/require-returns": [
+      "warn",
+      {
+        "checkGetters": false
+      }
+    ],
+    "jsdoc/require-param-type": "off",
+    "jsdoc/require-returns-type": "off",
+    "jsdoc/check-indentation": ["warn", {"excludeTags":["example"]}],
+    "jsdoc/check-tag-names": [
+      "warn",
+      {
+        "definedTags": ["packageDocumentation"]
+      }
+    ],
+    "jsdoc/no-types": "off",
+    "disable-autofix/jsdoc/no-types": "warn",
+    "jsdoc/require-description-complete-sentence": "off",
+    "disable-autofix/jsdoc/require-description-complete-sentence": [
+      "warn",
+      {
+        "tags": ["copyright", "returns"],
+        "abbreviations": ["e.g."]
+      }
+    ],
+    "jsdoc/require-description": [
+      "error",
+      {
+        "descriptionStyle": "body",
+        "contexts": ["any"]
+      }
+    ],
+    "no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true // always try to resolve types under `<root>@types` directory even it doesn't contain any source code`
+      }
+    },
+    "import/internal-regex": "^droppedcode/"
+  }
+}
