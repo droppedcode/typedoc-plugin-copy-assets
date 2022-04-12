@@ -1,6 +1,6 @@
 {
   "name": "@droppedcode/typedoc-plugin-copy-assets",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "droppedcode",
   "license": "MIT",
   "scripts": {
@@ -10,14 +10,13 @@
     "lint:fix": "eslint ./src/** --fix",
     "pack": "npm run build && npm pack"
   },
+  "peerDependencies": {
+    "typedoc": "^0.22.11"
+  },
   "devDependencies": {
-    "@types/lodash": "^4.14.178",
     "@types/node": "^16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.2",
-    "chokidar-cli": "^3.0.0",
-    "concurrently": "^7.0.0",
-    "copyfiles": "^2.4.1",
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-typescript": "^2.5.0",
@@ -26,13 +25,8 @@
     "eslint-plugin-jsdoc": "^37.7.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
-    "move-cli": "^2.0.0",
     "prettier": "^2.5.1",
-    "rimraf": "^3.0.2",
-    "typedoc": "^0.22.11",
-    "typedoc-plugin-missing-exports": "^0.22.6",
-    "typescript": "^4.5.4",
-    "wait-on": "^6.0.1"
+    "typescript": "^4.5.4"
   },
   "keywords": [
     "typedocplugin",

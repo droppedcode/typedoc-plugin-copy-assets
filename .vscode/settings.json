@@ -8,15 +8,5 @@
     {
       "mode": "location"
     }
-  ],
-  "cSpell.customDictionaries": {
-    "project-words": {
-      "name": "project-words",
-      "path": "${workspaceRoot}/../../../src/_/common/project-words.txt",
-      "description": "Words used in this project",
-      "addWords": true
-    },
-    "custom": true,
-    "internal-terms": false
-  }
+  ]
 }
