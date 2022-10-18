@@ -1,6 +1,6 @@
 {
   "name": "@droppedcode/typedoc-plugin-copy-assets",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "droppedcode",
   "license": "MIT",
   "scripts": {

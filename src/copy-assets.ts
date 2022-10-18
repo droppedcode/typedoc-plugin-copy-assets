@@ -23,16 +23,16 @@ export class CopyAssets {
   /** Path for output medias. */
   private _outMediaFolder?: string;
   /** Maps a reflection to a source file it was created from. */
-  private _reflectionPaths: Map<Reflection, string> = new Map();
+  private _reflectionPaths: Map<Reflection, string[]> = new Map();
   /** Maps an image absolute path to a relative path in the output. */
-  private _imagePathMaps: Map<string, string> = new Map();
+  private _referencePathMaps: Map<string, string> = new Map();
   /** Path that we already used. */
   private _usedOutputPaths: Set<string> = new Set();
 
   /**
    * The pattern used to find references in markdown.
    */
-  private _imagePattern = /(!\[.*?\]\()(.*?)(\))/g;
+  private _referencePattern = /(\[.*?\]\()(.*?)(\))/g;
 
   /**
    * Create a new RelativeIncludesConverterComponent instance.
@@ -45,7 +45,8 @@ export class CopyAssets {
     typedoc.converter.on(
       Converter.EVENT_CREATE_DECLARATION,
       (c: Readonly<Context>, r: Reflection, n: Node) => {
-        const filePath = this.getNodeFilePath(n);
+        const filePath = this.getFolderPaths(n, r, c);
+
         if (!filePath) return;
         this._reflectionPaths.set(r, filePath);
       }
@@ -78,19 +79,58 @@ export class CopyAssets {
         if (!currentReflection) return;
         if (!this._outMediaFolder) return;
 
-        const filePath = this._reflectionPaths.get(currentReflection);
+        const folderPaths = this._reflectionPaths.get(currentReflection);
 
-        if (!filePath) return;
+        if (!folderPaths) return;
 
         event.parsedText = this.processText(
           event.parsedText,
-          filePath,
+          folderPaths,
           currentOutputFilePath
         );
       },
       undefined,
       1 // Do it before the default
     );
+  }
+
+  /**
+   * Get the folder path for the current item.
+   *
+   * @param n Node.
+   * @param r Reflection.
+   * @param c Context.
+   * @returns The folder path for the current context item or undefined.
+   */
+  private getFolderPaths(
+    n: Node,
+    r: Reflection,
+    c: Readonly<Context>
+  ): string[] | undefined {
+    if (r.parent) {
+      const filePath = this.getNodeFilePath(n) ?? this.getReflectionFilePath(r);
+      return filePath ? [path.dirname(filePath)] : undefined;
+    } else {
+      const result: string[] = [];
+      const filePath = this.getReflectionFilePath(r);
+      if (filePath) {
+        result.push(path.dirname(filePath));
+      }
+      result.push(c.program.getCurrentDirectory());
+      return result;
+    }
+  }
+
+  /**
+   * Get the first file the reflection was created from.
+   *
+   * @param reflection The reflection.
+   * @returns The file path.
+   */
+  private getReflectionFilePath(reflection: Reflection): string | undefined {
+    if (!reflection.sources || reflection.sources.length === 0) return;
+
+    return reflection.sources[0].fileName;
   }
 
   /**
@@ -107,35 +147,51 @@ export class CopyAssets {
   }
 
   /**
-   * Processes a text collecting the images from it and copying to the out folder.
+   * Process the text collecting the references from it and copying to the out folder.
    *
    * @param text The text to process.
-   * @param originalFilePath Path of the parsed file.
+   * @param originalFolderPath Path of the parsed file.
+   * @param originalFolderPaths
    * @param outputFilePath Path of the documentation file.
    * @returns The modified comment.
    */
   private processText(
     text: string,
-    originalFilePath: string,
+    originalFolderPaths: string[],
     outputFilePath: string
   ): string {
     return text.replace(
-      this._imagePattern,
+      this._referencePattern,
       (_match, prefix, pathGroup, suffix) => {
         if (
           typeof pathGroup === 'string' &&
           (pathGroup.startsWith('./') || pathGroup.startsWith('../'))
         ) {
-          const imagePath = path.join(
-            path.dirname(originalFilePath),
-            pathGroup
-          );
+          let referencePath: string | undefined;
 
-          let newPath = this._imagePathMaps.get(imagePath);
+          for (const p of originalFolderPaths) {
+            const possiblePath = path.join(p, pathGroup);
+            if (fs.existsSync(possiblePath)) {
+              referencePath = possiblePath;
+              break;
+            }
+          }
+
+          if (!referencePath) {
+            console.warn(
+              `Missing file on relative paths: ${pathGroup}, paths tried: [${originalFolderPaths.join(
+                ', '
+              )}]`
+            );
+
+            return prefix + pathGroup + suffix;
+          }
+
+          let newPath = this._referencePathMaps.get(referencePath);
 
           if (!newPath) {
-            const ext = path.extname(imagePath);
-            const fileName = path.basename(imagePath, ext);
+            const ext = path.extname(referencePath);
+            const fileName = path.basename(referencePath, ext);
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             newPath = path.join(this._outMediaFolder!, fileName + ext);
 
@@ -149,9 +205,14 @@ export class CopyAssets {
             }
 
             this._usedOutputPaths.add(newPath);
-            this._imagePathMaps.set(imagePath, newPath);
+            this._referencePathMaps.set(referencePath, newPath);
 
-            fs.copyFileSync(imagePath, newPath);
+            // console.log(
+            //   `Copy ${referencePath} => ${newPath}, exists: ${fs.existsSync(
+            //     referencePath
+            //   )}`
+            // );
+            fs.copyFileSync(referencePath, newPath);
           }
 
           return (
