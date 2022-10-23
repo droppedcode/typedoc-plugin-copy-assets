@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "typedoc": "typedoc"
+  },
+  "devDependencies": {
+    "@droppedcode/typedoc-plugin-copy-assets": "^1.0.3",
+    "typedoc": "^0.23.16",
+    "typedoc-plugin-replace-text": "^2.0.0",
+    "typescript": "~4.7"
+  }
+}

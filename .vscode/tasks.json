@@ -6,6 +6,14 @@
       "label": "lint all",
       "script": "lint:all",
       "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "tsconfig.debug.json",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build"
+      }
     }
   ]
 }

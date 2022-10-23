@@ -1,0 +1,24 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Test",
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/tests/typedoc-plugins-example",
+      "runtimeExecutable": "npx",
+      "windows": {
+        "runtimeExecutable": "npx.cmd"
+      },
+      "runtimeArgs": ["typedoc"],
+      "preLaunchTask": "tsc: build - tsconfig.debug.json",
+      "outFiles": [
+        "${workspaceFolder}/tests/typedoc-plugins-example/node_modules/@droppedcode/typedoc-plugin-copy-assets/dist/**/*.js"
+      ]
+    }
+  ]
+}
