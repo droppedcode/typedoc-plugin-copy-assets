@@ -1,6 +1,6 @@
 {
   "name": "@droppedcode/typedoc-plugin-copy-assets",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "droppedcode",
   "license": "MIT",
   "scripts": {
@@ -11,7 +11,7 @@
     "pack": "npm run build && npm pack"
   },
   "peerDependencies": {
-    "typedoc": "^0.22.11"
+    "typedoc": "^0.23.19"
   },
   "devDependencies": {
     "@types/node": "^16.11.12",
@@ -30,6 +30,7 @@
   },
   "keywords": [
     "typedocplugin",
+    "typedoc-plugin",
     "assets",
     "image"
   ],

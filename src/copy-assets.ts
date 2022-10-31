@@ -12,6 +12,12 @@ import {
 } from 'typedoc';
 import { Node } from 'typescript';
 
+import {
+  CopyAssetsOptions,
+  defaultOptions,
+  optionsKey,
+} from './copy-assets-options';
+
 /**
  * Copies the assets found in comments to the output assets folder.
  */
@@ -33,6 +39,11 @@ export class CopyAssets {
    * The pattern used to find references in markdown.
    */
   private _referencePattern = /(\[.*?\]\()(.*?)(\))/g;
+  private _imagePattern = /(!\[.*?\]\()(.*?)(\))/g;
+
+  private _options: CopyAssetsOptions = defaultOptions;
+  private _includeList?: RegExp[];
+  private _excludeList?: RegExp[];
 
   /**
    * Create a new RelativeIncludesConverterComponent instance.
@@ -54,6 +65,16 @@ export class CopyAssets {
 
     typedoc.renderer.on(Renderer.EVENT_BEGIN, () => {
       this._outFolder = this._typedoc?.options.getValue('out');
+      this._options =
+        <CopyAssetsOptions>this._typedoc?.options.getValue(optionsKey) ??
+        defaultOptions;
+
+      this._includeList = this._options.include
+        ? this._options.include.map((m) => new RegExp(m))
+        : undefined;
+      this._excludeList = this._options.exclude
+        ? this._options.exclude.map((m) => new RegExp(m))
+        : undefined;
 
       if (!this._outFolder) return;
 
@@ -161,11 +182,14 @@ export class CopyAssets {
     outputFilePath: string
   ): string {
     return text.replace(
-      this._referencePattern,
+      this._options.onlyImages ? this._imagePattern : this._referencePattern,
       (_match, prefix, pathGroup, suffix) => {
         if (
           typeof pathGroup === 'string' &&
-          (pathGroup.startsWith('./') || pathGroup.startsWith('../'))
+          (pathGroup.startsWith('./') || pathGroup.startsWith('../')) &&
+          (!this._includeList ||
+            this._includeList.some((s) => s.test(_match))) &&
+          (!this._excludeList || !this._excludeList.some((s) => s.test(_match)))
         ) {
           let referencePath: string | undefined;
 
