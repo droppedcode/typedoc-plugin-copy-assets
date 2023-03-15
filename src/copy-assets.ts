@@ -162,7 +162,7 @@ export class CopyAssets {
    */
   private getNodeFilePath(node: Node): string | undefined {
     if (!node) return undefined;
-    if ('fileName' in node) return node['fileName'];
+    if ('fileName' in node) return <string | undefined>node['fileName'];
 
     return this.getNodeFilePath(node.parent);
   }
