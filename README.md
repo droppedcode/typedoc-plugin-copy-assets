@@ -31,3 +31,20 @@ When processing what to copy the plugin first checks that any include item are a
 ## The output path
 
 The output will be determined from the settings of typedoc using the `out` option (see [typedoc options](https://typedoc.org/guides/options/#out)) joined with `assets/media`.
+
+## Typedoc
+
+Supports 0.23 (tested with 0.23.16, 0.23.19)
+
+For 0.22 see version 1.0.4
+
+## How to build
+
+- download the source or clone it
+- npm i
+- npm run build
+
+## How to debug
+
+- copy the package.json to the `tests\typedoc-plugins-example\node_modules\@droppedcode\typedoc-plugin-copy-assets` folder
+- vscode F5 or debug or run `npx typedoc` in the `tests\typedoc-plugins-example` folder
