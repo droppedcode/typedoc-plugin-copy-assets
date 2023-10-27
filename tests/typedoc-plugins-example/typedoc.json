@@ -3,6 +3,7 @@
   "entryPoints": ["./src/index.ts"],
   "out": "docs",
   "includes": "src",
+  "plugin": ["@droppedcode/typedoc-plugin-copy-assets", "typedoc-plugin-replace-text"],
   "copyAssets": {
     "onlyImages": false,
     "include": [".(png|md)\\)$"],

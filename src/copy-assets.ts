@@ -9,6 +9,8 @@ import {
   PageEvent,
   Reflection,
   Renderer,
+  SignatureReflection,
+  DeclarationReflection,
 } from 'typedoc';
 import { Node } from 'typescript';
 
@@ -47,7 +49,6 @@ export class CopyAssets {
 
   /**
    * Create a new RelativeIncludesConverterComponent instance.
-   *
    * @param typedoc The application.
    */
   public initialize(typedoc: Readonly<Application>): void {
@@ -117,7 +118,6 @@ export class CopyAssets {
 
   /**
    * Get the folder path for the current item.
-   *
    * @param n Node.
    * @param r Reflection.
    * @param c Context.
@@ -144,19 +144,26 @@ export class CopyAssets {
 
   /**
    * Get the first file the reflection was created from.
-   *
    * @param reflection The reflection.
    * @returns The file path.
    */
   private getReflectionFilePath(reflection: Reflection): string | undefined {
-    if (!reflection.sources || reflection.sources.length === 0) return;
+    if (
+      reflection.variant !== 'signature' &&
+      reflection.variant !== 'declaration'
+    )
+      return;
+    const sourceVariant = reflection as
+      | SignatureReflection
+      | DeclarationReflection;
 
-    return reflection.sources[0].fileName;
+    if (!sourceVariant.sources || sourceVariant.sources.length === 0) return;
+
+    return sourceVariant.sources[0].fileName;
   }
 
   /**
    * Get the file the node was created from.
-   *
    * @param node The node.
    * @returns The file path.
    */
@@ -169,7 +176,6 @@ export class CopyAssets {
 
   /**
    * Process the text collecting the references from it and copying to the out folder.
-   *
    * @param text The text to process.
    * @param originalFolderPath Path of the parsed file.
    * @param originalFolderPaths

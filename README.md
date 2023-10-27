@@ -34,7 +34,9 @@ The output will be determined from the settings of typedoc using the `out` optio
 
 ## Typedoc
 
-Supports 0.23 (tested with 0.23.16, 0.23.19)
+Supports 0.25 (tested with 0.25.2)
+
+For 0.23 see version 1.0.9
 
 For 0.22 see version 1.0.4
 
@@ -46,5 +48,6 @@ For 0.22 see version 1.0.4
 
 ## How to debug
 
-- copy the package.json to the `tests\typedoc-plugins-example\node_modules\@droppedcode\typedoc-plugin-copy-assets` folder
+- `npm run test:prep`
+- Update the `@droppedcode/typedoc-plugin-copy-assets` version in `tests\typedoc-plugins-example\package.json` if needed
 - vscode F5 or debug or run `npx typedoc` in the `tests\typedoc-plugins-example` folder
