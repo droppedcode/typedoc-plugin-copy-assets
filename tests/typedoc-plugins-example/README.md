@@ -4,7 +4,7 @@ This repo tries to be minimal representation of couple of Typedoc plugin feature
 
 Directory structure:
 
-![Main image](./main.png)]
+![Main image](./main.png)
 
 Modules:
 

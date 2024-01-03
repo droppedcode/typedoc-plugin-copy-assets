@@ -3,10 +3,15 @@
   "entryPoints": ["./src/index.ts"],
   "out": "docs",
   "includes": "src",
-  "plugin": ["@droppedcode/typedoc-plugin-copy-assets", "typedoc-plugin-replace-text"],
+  "plugin": [
+    "@droppedcode/typedoc-plugin-copy-assets",
+    "typedoc-plugin-replace-text"
+  ],
   "copyAssets": {
     "onlyImages": false,
-    "include": [".(png|md)\\)$"],
-    "exclude": ["\\(.*?exclude/.*?\\)$"]
+    "exclude": ["data-foo=\"do not\""],
+    "includePath": [".(png|md)$"],
+    "excludePath": [".*?exclude/.*?$"],
+    "copyHtmlImgTag": true
   }
 }

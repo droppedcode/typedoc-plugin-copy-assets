@@ -5,7 +5,7 @@
   "includes": "src",
   "copyAssets": {
     "onlyImages": false,
-    "include": [".(png|md)\\)$"],
-    "exclude": ["\\(.*?exclude/.*?\\)$"]
+    "includePath": [".(png|md)$"],
+    "excludePath": [".*?exclude/.*?$"]
   }
 }

@@ -42,10 +42,13 @@ export class CopyAssets {
    */
   private _referencePattern = /(\[.*?\]\()(.*?)(\))/g;
   private _imagePattern = /(!\[.*?\]\()(.*?)(\))/g;
+  private _htmlImgTagPattern = /(<img[^<]*?src=")(.*?)("[^<]*?>)/g;
 
   private _options: CopyAssetsOptions = defaultOptions;
   private _includeList?: RegExp[];
   private _excludeList?: RegExp[];
+  private _includePathList?: RegExp[];
+  private _excludePathList?: RegExp[];
 
   /**
    * Create a new RelativeIncludesConverterComponent instance.
@@ -75,6 +78,12 @@ export class CopyAssets {
         : undefined;
       this._excludeList = this._options.exclude
         ? this._options.exclude.map((m) => new RegExp(m))
+        : undefined;
+      this._includePathList = this._options.includePath
+        ? this._options.includePath.map((m) => new RegExp(m))
+        : undefined;
+      this._excludePathList = this._options.excludePath
+        ? this._options.excludePath.map((m) => new RegExp(m))
         : undefined;
 
       if (!this._outFolder) return;
@@ -177,8 +186,7 @@ export class CopyAssets {
   /**
    * Process the text collecting the references from it and copying to the out folder.
    * @param text The text to process.
-   * @param originalFolderPath Path of the parsed file.
-   * @param originalFolderPaths
+   * @param originalFolderPaths Possible paths of the parsed file.
    * @param outputFilePath Path of the documentation file.
    * @returns The modified comment.
    */
@@ -187,80 +195,134 @@ export class CopyAssets {
     originalFolderPaths: string[],
     outputFilePath: string
   ): string {
-    return text.replace(
+    text = text.replace(
       this._options.onlyImages ? this._imagePattern : this._referencePattern,
-      (_match, prefix, pathGroup, suffix) => {
-        if (
-          typeof pathGroup === 'string' &&
-          (pathGroup.startsWith('./') || pathGroup.startsWith('../')) &&
-          (!this._includeList ||
-            this._includeList.some((s) => s.test(_match))) &&
-          (!this._excludeList || !this._excludeList.some((s) => s.test(_match)))
-        ) {
-          let referencePath: string | undefined;
+      (_match, prefix, pathGroup, suffix) =>
+        this.processMatch(
+          originalFolderPaths,
+          outputFilePath,
+          _match,
+          prefix,
+          pathGroup,
+          suffix,
+          false
+        )
+    );
 
-          for (const p of originalFolderPaths) {
-            const possiblePath = path.join(p, pathGroup);
-            if (fs.existsSync(possiblePath)) {
-              referencePath = possiblePath;
-              break;
-            }
-          }
+    if (this._options.copyHtmlImgTag) {
+      text = text.replace(
+        this._htmlImgTagPattern,
+        (_match, prefix, pathGroup, suffix) =>
+          this.processMatch(
+            originalFolderPaths,
+            outputFilePath,
+            _match,
+            prefix,
+            pathGroup,
+            suffix,
+            true
+          )
+      );
+    }
 
-          if (!referencePath) {
-            console.warn(
-              `Missing file on relative paths: ${pathGroup}, paths tried: [${originalFolderPaths.join(
-                ', '
-              )}]`
-            );
+    return text;
+  }
 
-            return prefix + pathGroup + suffix;
-          }
+  /**
+   * Process a match, replacing it with the new path.
+   * @param originalFolderPaths Possible paths of the parsed file.
+   * @param outputFilePath Path of the documentation file.
+   * @param match Match to process.
+   * @param prefix Prefix of the match.
+   * @param pathGroup Path of of the resource.
+   * @param suffix Suffix of the match.
+   * @param allowNonRelativePaths Allow non relative paths to be processed.
+   * @returns The replacement of the match.
+   */
+  private processMatch(
+    originalFolderPaths: string[],
+    outputFilePath: string,
+    match: string,
+    prefix: string,
+    pathGroup: string,
+    suffix: string,
+    allowNonRelativePaths: boolean
+  ): string {
+    if (
+      typeof pathGroup === 'string' &&
+      // Check if we allow non relative paths, that it is not using protocol
+      ((allowNonRelativePaths && !pathGroup.includes('://')) ||
+        pathGroup.startsWith('./') ||
+        pathGroup.startsWith('../')) &&
+      (!this._includeList || this._includeList.some((s) => s.test(match))) &&
+      (!this._excludeList || !this._excludeList.some((s) => s.test(match))) &&
+      (!this._includePathList ||
+        this._includePathList.some((s) => s.test(pathGroup))) &&
+      (!this._excludePathList ||
+        !this._excludePathList.some((s) => s.test(pathGroup)))
+    ) {
+      let referencePath: string | undefined;
 
-          let newPath = this._referencePathMaps.get(referencePath);
-
-          if (!newPath) {
-            const ext = path.extname(referencePath);
-            const fileName = path.basename(referencePath, ext);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            newPath = path.join(this._outMediaFolder!, fileName + ext);
-
-            let index = 0;
-            while (this._usedOutputPaths.has(newPath)) {
-              newPath = path.join(
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this._outMediaFolder!,
-                `${fileName}_${index++}${ext}`
-              );
-            }
-
-            this._usedOutputPaths.add(newPath);
-            this._referencePathMaps.set(referencePath, newPath);
-
-            // console.log(
-            //   `Copy ${referencePath} => ${newPath}, exists: ${fs.existsSync(
-            //     referencePath
-            //   )}`
-            // );
-            fs.copyFileSync(referencePath, newPath);
-          }
-
-          return (
-            prefix +
-            path
-              .relative(
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                path.dirname(path.join(this._outFolder!, outputFilePath)),
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                newPath
-              )
-              .replace(/\\/g, '/') +
-            suffix
-          );
-        } else {
-          return _match;
+      for (const p of originalFolderPaths) {
+        const possiblePath = path.join(p, pathGroup);
+        if (fs.existsSync(possiblePath)) {
+          referencePath = possiblePath;
+          break;
         }
       }
-    );
+
+      if (!referencePath) {
+        console.warn(
+          `Missing file on relative paths: ${pathGroup}, paths tried: [${originalFolderPaths.join(
+            ', '
+          )}]`
+        );
+
+        return prefix + pathGroup + suffix;
+      }
+
+      let newPath = this._referencePathMaps.get(referencePath);
+
+      if (!newPath) {
+        const ext = path.extname(referencePath);
+        const fileName = path.basename(referencePath, ext);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        newPath = path.join(this._outMediaFolder!, fileName + ext);
+
+        let index = 0;
+        while (this._usedOutputPaths.has(newPath)) {
+          newPath = path.join(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this._outMediaFolder!,
+            `${fileName}_${index++}${ext}`
+          );
+        }
+
+        this._usedOutputPaths.add(newPath);
+        this._referencePathMaps.set(referencePath, newPath);
+
+        // console.log(
+        //   `Copy ${referencePath} => ${newPath}, exists: ${fs.existsSync(
+        //     referencePath
+        //   )}`
+        // );
+        fs.copyFileSync(referencePath, newPath);
+      }
+
+      return (
+        prefix +
+        path
+          .relative(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            path.dirname(path.join(this._outFolder!, outputFilePath)),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            newPath
+          )
+          .replace(/\\/g, '/') +
+        suffix
+      );
+    } else {
+      return match;
+    }
   }
 }
